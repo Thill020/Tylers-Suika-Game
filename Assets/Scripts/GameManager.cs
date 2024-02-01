@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     private Scores scoreBoard;           // persistant object that holds scores between runs
                                          
     //[TIMERS]                           
-    float nextCircleTimeLimit = .5f;     //how long must pass between circles being able to be dropped
+    readonly float nextCircleTimeLimit = .5f;     //how long must pass between circles being able to be dropped
     float nextCircleTime = 0;            // the current time since last circle dropped
                                          
     //[CANVAS VARIABLES + CONTROLS]      
@@ -61,7 +61,7 @@ public class GameManager : MonoBehaviour
                                          
     //[OTHER VARIABLES]                  
     private Vector3 mousePos;            // the position of the cursor where the curCircle is suspended before dropping
-    private float cursorSpeed = 10;      // horizontal speed control when on controller
+    private readonly float cursorSpeed = 10;      // horizontal speed control when on controller
     public GameObject gameOverLine;      // the line the determines when a game over is hit
     public int largestCircleMade = 0;    //        
 
@@ -133,6 +133,7 @@ public class GameManager : MonoBehaviour
         curCircle.transform.position = mousePos;
         curCircle.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
 
+
         //If the game is paused don't let the player drop the circles
         if (paused)
             return;
@@ -140,8 +141,8 @@ public class GameManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0) || Input.GetAxis("Jump") > 0.5 || Input.GetAxis("Fire1") > 0.5)
         {
             curCircle.GetComponent<CircleLogic>().DropCircle();
-            if (int.Parse(curCircle.gameObject.tag) > largestCircleMade)
-                largestCircleMade = int.Parse(curCircle.gameObject.tag);
+            if (int.Parse(curCircle.tag) > largestCircleMade)
+                largestCircleMade = int.Parse(curCircle.tag);
 
             curCircle = null;
                      
@@ -158,7 +159,7 @@ public class GameManager : MonoBehaviour
     public void Reset()
     {
         curScore = 0;
-        currentScoreText.GetComponent<TextMeshProUGUI>().text = $"Score: {curScore.ToString()}";
+        currentScoreText.GetComponent<TextMeshProUGUI>().text = $"Score: {curScore}";
         gameOver = false;
         SceneManager.LoadScene(0);
     }
@@ -203,6 +204,16 @@ public class GameManager : MonoBehaviour
         scoreBoard.ContType = controlType;
     }
 
+    public void Quit()
+    {
+        #if UNITY_STANDALONE
+            Application.Quit();
+        #endif
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #endif
+    }
+
     #endregion
 
     #region Circle Functions
@@ -221,7 +232,7 @@ public class GameManager : MonoBehaviour
         randCircle = Random.Range(0, 5);
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0;
-        GameObject circle = Instantiate(circles[randCircle], mousePos, Quaternion.identity);
+        GameObject circle = Instantiate(circles[randCircle], instantiationPoint, Quaternion.identity);
 
         return circle;
     }
@@ -286,8 +297,8 @@ public class GameManager : MonoBehaviour
         if(curScore > bestScore)
             bestScore = curScore;
 
-        currentScoreText.GetComponent<TextMeshProUGUI>().text = $"Score: {curScore.ToString()}";
-        bestScoreText.GetComponent<TextMeshProUGUI>().text = $"Best: {bestScore.ToString()}";
+        currentScoreText.GetComponent<TextMeshProUGUI>().text = $"Score: {curScore}";
+        bestScoreText.GetComponent<TextMeshProUGUI>().text = $"Best: {bestScore}";
     }
 
 }
