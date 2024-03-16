@@ -58,7 +58,13 @@ public class GameManager : MonoBehaviour
     [SerializeField]                     
     private GameObject currentScoreText; // the text object that holds the run's current score
     int curScore = 0;                    // the current score of the run
-                                         
+
+    [SerializeField]
+    private UnityEngine.UI.Toggle controlToggleMouse;
+
+    [SerializeField]
+    private UnityEngine.UI.Toggle controlToggleKeyboard;
+
     //[OTHER VARIABLES]                  
     private Vector3 mousePos;            // the position of the cursor where the curCircle is suspended before dropping
     private readonly float cursorSpeed = 10;      // horizontal speed control when on controller
@@ -67,7 +73,7 @@ public class GameManager : MonoBehaviour
 
     //[ENUMERATORS]
     ThemeType theme;
-    ControlType controlType = ControlType.Mouse;
+    ControlType controlType;
 
     #endregion
 
@@ -78,10 +84,37 @@ public class GameManager : MonoBehaviour
     {
         theme = ThemeType.Colors;
 
-        //Make sure persisting variables persist between rounds
-        scoreBoard = FindObjectOfType<Scores>();
-        bestScore = scoreBoard.BestScore;
-        controlType = scoreBoard.ContType;
+        if(PlayerPrefs.HasKey("High Score"))
+        {
+            bestScore = PlayerPrefs.GetInt("High Score");
+        }
+        else
+        {
+            bestScore = 0;
+        }
+
+        //CURRENTLY CONTROL DEFAULTS TO MOUSE ON LOAD
+
+        if(PlayerPrefs.HasKey("Control Type"))
+        {
+            SetControlType(PlayerPrefs.GetInt("Control Type"));
+        }
+        else
+        {
+            SetControlType(1);
+            PlayerPrefs.SetInt("Control Type", 1);
+        }
+
+        if (controlType == ControlType.Mouse)
+        {
+            controlToggleKeyboard.isOn = false;
+            controlToggleMouse.isOn = true;
+        }
+        else 
+        {
+            controlToggleKeyboard.isOn = true;
+            controlToggleMouse.isOn = false;
+        }
         
         //Start game inititives
         StartGame();
@@ -90,6 +123,13 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+       /* if (Input.GetKeyDown(KeyCode.U))
+        {
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+        }*/
+
+
         //If game over has been reached, stop updating the game cycle
         if (gameOver)
             return;
@@ -202,6 +242,8 @@ public class GameManager : MonoBehaviour
         gameOverScreen.SetActive(true);
         scoreBoard.BestScore = bestScore;
         scoreBoard.ContType = controlType;
+        PlayerPrefs.SetInt("High Score", bestScore);
+        PlayerPrefs.Save();
     }
 
     public void Quit()
@@ -262,13 +304,25 @@ public class GameManager : MonoBehaviour
     #region Accessor Functions
     public void SetControlType(int contType)
     {
+        if (gameObject)
+
+/*        Debug.LogError("Set Control Type - Control Type: " + contType);
+*/
         switch (contType)
         {
             case 0: controlType = ControlType.Keyboard;
                 break;
-            default: controlType = ControlType.Mouse;
+            case 1: controlType = ControlType.Mouse;
+                break;
+            default: 
                 break;
         }
+
+        PlayerPrefs.SetInt("Control Type", contType);
+        PlayerPrefs.Save();
+
+/*        Debug.LogWarning("Set Control Type - Control Type: " + controlType);
+*/
     }
 
     public void SetTheme(ThemeType t)
