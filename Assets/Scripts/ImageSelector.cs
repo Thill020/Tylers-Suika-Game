@@ -13,7 +13,7 @@ public class ImageSelector : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
+        gameManager = FindAnyObjectByType<GameManager>();
         theme = gameManager.GetTheme();
 
         switch (theme)

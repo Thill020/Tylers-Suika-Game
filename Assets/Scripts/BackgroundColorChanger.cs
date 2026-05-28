@@ -14,7 +14,7 @@ public class BackgroundColorChanger : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gameManager = FindObjectOfType<GameManager>();
+        gameManager = FindAnyObjectByType<GameManager>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 

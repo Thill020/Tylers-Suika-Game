@@ -49,12 +49,12 @@ public class CircleLogic : MonoBehaviour
             {
                 Destroy(collision.gameObject);
                 Destroy(gameObject);
-                GameManager tempGameManager = FindObjectOfType<GameManager>();
+                GameManager tempGameManager = FindAnyObjectByType<GameManager>();
                 tempGameManager.IncrementScore(int.Parse(gameObject.tag));
                 return;
             }
 
-            GameManager gameManager = FindObjectOfType<GameManager>();
+            GameManager gameManager = FindAnyObjectByType<GameManager>();
             gameManager.IncrementScore(int.Parse(gameObject.tag));
 
             float newCircleX = (gameObject.transform.position.x + collision.gameObject.transform.position.x) / 2;

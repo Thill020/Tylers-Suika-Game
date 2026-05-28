@@ -26,7 +26,9 @@ public class GameManager : MonoBehaviour
     public GameObject[] circles;         // array of circle prefabs
     public Sprite[] planeswalkerSprites; // array of sprites for the planeswalker theme
     public Color[] circleColors;         // array of colors for the circles
-                                         
+
+
+
     //[CIRCLE LOGIC]                     
     public GameObject nextPoint;         // the point on screen where the next circle to be dropped is held
     private GameObject nextCircle;       // the next circle to be dropped
@@ -34,14 +36,22 @@ public class GameManager : MonoBehaviour
     int randCircle;                      // the random number that determines which circle is created next. Changes frequently.
     float xPosOffset = 0;
 
+
+
     //[OBJECT REFERENCES]                
     [SerializeField]                     
     private Scores scoreBoard;           // persistant object that holds scores between runs
-                                         
+    
+
+
+
     //[TIMERS]                           
     readonly float nextCircleTimeLimit = .5f;     //how long must pass between circles being able to be dropped
     float nextCircleTime = 0;            // the current time since last circle dropped
-                                         
+
+
+
+
     //[CANVAS VARIABLES + CONTROLS]      
     [SerializeField]                     
     private GameObject gameOverScreen;   // canvas screen controlling game over options
@@ -51,8 +61,7 @@ public class GameManager : MonoBehaviour
     private GameObject pauseScreen;      //canvas screen controlling the pause menu
     bool paused = false;                 //is the game paused
                                          
-    [SerializeField]                     
-    private GameObject bestScoreText;    // the text object that holds the best score so far
+    [SerializeField]private GameObject bestScoreText;    // the text object that holds the best score so far
     int bestScore = 0;                   // the best score in this session
                                          
     [SerializeField]                     
@@ -65,11 +74,25 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private UnityEngine.UI.Toggle controlToggleKeyboard;
 
+
+
+
+    //Fathers Day Mode Variables
+    [SerializeField]
+    private GameObject fathersDayModeModifierText;
+    bool fathersDayMode = false;         // if true, the next circle will spawn as one of the 5 largest circles, used for testing and for a special mode on father's day
+    int fathersDayModeModifier = 5;      // Adjusts the range of allowable circles when in father's day mode, should be set to 5 for the intended effect of only spawning the 5 largest circles, but can be adjusted for testing or for a different effect
+    [SerializeField]
+    private GameObject fathersDayModeControls; // The container for the fathers day mode controls, used to hide the controls when not in fathers day mode.
+
+
     //[OTHER VARIABLES]                  
     private Vector3 mousePos;            // the position of the cursor where the curCircle is suspended before dropping
     private readonly float cursorSpeed = 10;      // horizontal speed control when on controller
     public GameObject gameOverLine;      // the line the determines when a game over is hit
-    public int largestCircleMade = 0;    //        
+    public int largestCircleMade = 0;    // 
+  
+
 
     //[ENUMERATORS]
     ThemeType theme;
@@ -146,7 +169,7 @@ public class GameManager : MonoBehaviour
 
         //Keep the circle in the next point from dropping or increasing velocity.
         nextCircle.transform.position = nextPoint.transform.position;
-        nextCircle.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+        nextCircle.GetComponent<Rigidbody2D>().linearVelocity = Vector3.zero;
 
         //if the current circle in null, wait until so much time has passed then move the next circle to the current circle
         if (curCircle == null)
@@ -171,7 +194,7 @@ public class GameManager : MonoBehaviour
         mousePos.z = 0;
 
         curCircle.transform.position = mousePos;
-        curCircle.GetComponent<Rigidbody2D>().velocity = Vector3.zero;
+        curCircle.GetComponent<Rigidbody2D>().linearVelocity = Vector3.zero;
 
 
         //If the game is paused don't let the player drop the circles
@@ -261,6 +284,8 @@ public class GameManager : MonoBehaviour
     #region Circle Functions
     private GameObject CreateCircle()
     {
+        
+
         randCircle = Random.Range(0, 5);
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0;
@@ -271,7 +296,18 @@ public class GameManager : MonoBehaviour
 
     private GameObject CreateCircle(Vector3 instantiationPoint)
     {
-        randCircle = Random.Range(0, 5);
+        Debug.Log("Creating Circle - Fathers Day Mode: " + fathersDayMode + ", Fathers Day Mode Modifier: " + fathersDayModeModifier + ", Largest Circle Made: " + largestCircleMade);
+        if (fathersDayMode){
+            if (fathersDayModeModifier > largestCircleMade)
+            {
+                randCircle = Random.Range(0, fathersDayModeModifier);
+            }
+            else
+                randCircle = Random.Range(largestCircleMade - fathersDayModeModifier, largestCircleMade);
+        }
+        else
+            randCircle = Random.Range(0, 5);
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePos.z = 0;
         GameObject circle = Instantiate(circles[randCircle], instantiationPoint, Quaternion.identity);
@@ -353,6 +389,34 @@ public class GameManager : MonoBehaviour
 
         currentScoreText.GetComponent<TextMeshProUGUI>().text = $"Score: {curScore}";
         bestScoreText.GetComponent<TextMeshProUGUI>().text = $"Best: {bestScore}";
+    }
+
+    
+    public void ToggleFathersDayMode()
+    {
+        fathersDayMode = !fathersDayMode;
+        fathersDayModeControls.SetActive(fathersDayMode);
+        Debug.Log("Fathers Day Mode: " + fathersDayMode);
+    }
+
+    public void IncrementFathersDayMode()
+    {
+        if (fathersDayModeModifier == 11)
+            return;
+
+        fathersDayModeModifier++;
+        fathersDayModeModifierText.GetComponent<TextMeshProUGUI>().text = fathersDayModeModifier.ToString();
+
+    }
+
+    public void DecrementFathersDayMode()
+    {
+        if (fathersDayModeModifier == 1)
+            return;
+
+        fathersDayModeModifier--;
+        fathersDayModeModifierText.GetComponent<TextMeshProUGUI>().text = fathersDayModeModifier.ToString();
+
     }
 
 }
